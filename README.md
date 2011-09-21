@@ -22,10 +22,9 @@ content:
 
     * * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-client report --server SERVER --port PORT --hostid HOSTID > /dev/null
 
-If you are using RVM and didn't install the `apocalypse-client` for system ruby, use this command instead:
+If you are using a system-wide RVM and didn't install the `apocalypse-client` for system ruby, use this command instead:
 
-
-    * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/bin/env apocalypse-client report --server SERVER --port PORT --hostid HOSTID > /dev/null
+    * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report --server SERVER --port PORT --hostid HOSTID > /dev/null
 
 This will send metrics data every minute to your Apocalypse server. If
 you require different intervals, refer to `man 5 crontab` for details on
