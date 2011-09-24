@@ -24,7 +24,7 @@ module Apocalyse
           @port      = read_user_input("Enter The port number of the Apocalypse server {{default}}: ", "80")
           
           # Cleanup the user input for the server input
-          url         = url.gsub(/http:\/\/(.+?$)/, "\\1") if url =~ /^http[s]*:\/\//i
+          url         = url.gsub(/http:\/\/(.+?$)/, "\\1") if url =~ /^http:\/\//i
           @address    = url.gsub(/\/$/, "")
 
           # HTTP auth variables

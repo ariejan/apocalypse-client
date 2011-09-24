@@ -18,7 +18,11 @@ module Apocalypse
   class Client
     def self.host_file; "#{File.dirname(__FILE__)}/../host.yml"; end
     def self.cron_job_command
-      "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-reporter report > /dev/null"
+      if `which rvm`.chomp.empty?
+        return "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-reporter report > /dev/null"
+      else
+        return " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null"
+      end
     end
     def self.cron_job_file
       "/etc/cron.d/apocalyse"
