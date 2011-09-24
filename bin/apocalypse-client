@@ -6,7 +6,7 @@ $LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 require "apocalypse-client"
 require 'trollop'
 
-SUB_COMMANDS = %w(report install check)
+SUB_COMMANDS = %w(report check install now)
 
 global_opts = Trollop::options do
   banner "Apocalypse Reporter"
@@ -22,6 +22,7 @@ cmd_opts = case cmd
       opt :hostid,  "Identifier for this server", :type => :string, :short => "-i"
     end
   when "install"
+  when "now"    
     Trollop::options do
       # TODO
     end
