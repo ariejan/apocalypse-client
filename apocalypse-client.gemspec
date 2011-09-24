@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency("json", ["~> 1.5.3"])
-  s.add_dependency("net-ping", ["~> 1.5.1"])  
   s.add_dependency("trollop", ["~> 1.16.2"])
 
   s.add_development_dependency("rspec", ["~> 2.6.0"])

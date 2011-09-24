@@ -1,6 +1,3 @@
-require 'yaml'
-require 'net/ping'
-
 module Apocalyse
   module Client
     class Install
