@@ -17,28 +17,12 @@ Next install the ruby gem.
 
     sudo gem install apocalypse-client
 
-Now you can create the file `/etc/cron.d/apocalypse` with the following
-content:
-
-    * * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-client report --server SERVER --port PORT --hostid HOSTID > /dev/null
-
-If you are using a system-wide RVM and didn't install the `apocalypse-client` for system ruby, use this command instead:
-
-    * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report --server SERVER --port PORT --hostid HOSTID > /dev/null
-
+once installed run the install|now command
+  apocalypse-client now
+    
 This will send metrics data every minute to your Apocalypse server. If
 you require different intervals, refer to `man 5 crontab` for details on
 how to schedule reporting.
-
-You need to replace the placeholders with actual data:
-
- * `SERVER` - The ip or hostname for your Apocalypse server. E.g.
-   apocalyse.example.org
- * `PORT` - The port number the Apocalypse server is listening on.
-   Default: 80
- * `HOSTID` - An ID identifying this server. Use the FQDN for this 
-   server so it can be pinged to see if it's alive.
- * `RUBY_VERSION` - Your RVM ruby version or 'default' to make sure the apocalypse-client is accessible.
 
 If an error occurs cron will try to notify you by email. This depends on
 how your systems cron is configured.
