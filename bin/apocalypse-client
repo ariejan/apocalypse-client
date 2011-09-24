@@ -17,9 +17,7 @@ cmd = ARGV.shift
 cmd_opts = case cmd
   when "report"
     Trollop::options do
-      opt :server,  "Hostname of the Apocalypse Server", :type => :string, :short => "-s"
-      opt :port,    "Port the Apocalypse Server is listening on. Default: 80", :type => :string, :default => '80', :short => "-p"
-      opt :hostid,  "Identifier for this server", :type => :string, :short => "-i"
+      # Nothing here
     end
   when "install"
   when "now"    

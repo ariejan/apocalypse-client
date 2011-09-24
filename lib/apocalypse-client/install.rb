@@ -23,20 +23,19 @@ module Apocalyse
         # Read the configuration for this server provided by the user
         def read_values
           # Read the Apocalypse Server information
-          url       = read_user_input("Enter The full address of the Apocalypse server: ").downcase
-          port      = read_user_input("Enter The port number of the Apocalypse server {{default}}: ", "80")
+          url        = read_user_input("Enter The full address of the Apocalypse server: ").downcase
+          @port      = read_user_input("Enter The port number of the Apocalypse server {{default}}: ", "80")
           
           # Cleanup the user input for the server input
-          url         = "http://#{url}" unless url =~ /^http[s]*:\/\//i
-          url         = url.gsub(/\/$/, "")
-          @address    = "#{url}:#{port}"
+          url         = url.gsub(/http:\/\/(.+?$)/, "\\1") if url =~ /^http[s]*:\/\//i
+          @address    = url.gsub(/\/$/, "")
 
           # HTTP auth variables
           @username = read_user_input("Enter your username {{default}}: "     , `whoami`)
           @password = read_user_input("Enter your password: "                 , "", false)
           
           # This servers hostname
-          @hostname = read_user_input("Enter The full hostname {{default}}: " , `hostname`).downcase
+          @hostname = read_user_input("Enter The full hostname(FQDN) {{default}}: " , `hostname`).downcase
         end
       
         # Ask the user if the input is valid
@@ -45,10 +44,11 @@ module Apocalyse
           2.times { puts }
           puts <<-EOF
 You have entered the following information
-Apocalypse server     : #{@address}
-Apocalypse username   : #{@username}
-Apocalypse password   : #{'*' *@password.length}
-This Server' hostname : #{@hostname}
+Apocalypse server       : #{@address}
+Apocalypse server port  : #{@port}
+Apocalypse username     : #{@username}
+Apocalypse password     : #{'*' *@password.length}
+This Server' hostname   : #{@hostname}
 EOF
 
           print "Is this correct? [no]: "
@@ -66,7 +66,10 @@ EOF
           puts "Writing Apocalypse host file..."
           host_config   = {
                            :hostname        => @hostname,
-                           :server_address  => build_auth_address(@address, @username, @password)
+                           :server_address  => @address, 
+                           :port            => @port,                           
+                           :username        => @username, 
+                           :password        => @password
                           }
           file          = File.open(::Apocalypse::Client.host_file, "w") do |f|
             f.write host_config.to_yaml
@@ -111,14 +114,9 @@ EOF
         
         # Check if the server is reachable before continuing with the installation
         def server_reachable?
-          puts "Checking #{@address}.. "
-          Net::Ping::HTTP.new(@address).ping?
-        end
-        
-        # Build the full Apocalypse Server address containing the username and password
-        def build_auth_address(address, username, password)
-          auth = (password.empty?) ? "#{username}@" : "#{username}:password@"
-          address.gsub(/^(http[s]*:\/\/)(.+?)$/i, "\\1#{auth}\\2")
+          puts "Checking #{@address}:#{@port}"
+          res = Net::HTTP.start(@address, @port) {|http| http.get('/') }
+          return res.code == "200"
         end
     end
   end

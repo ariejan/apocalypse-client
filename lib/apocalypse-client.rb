@@ -24,18 +24,20 @@ module Apocalypse
       "/etc/cron.d/apocalyse"
     end
     def properties
-      Yaml.load(self.class.host_file) if File.exists?(filename)
+      throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
+      @properties ||= ::YAML.load(File.open(self.class.host_file))
     end
     ## Commands
 
     # Report metrics
     def report(options)
-      
-
-			request       = Net::HTTP::Post.new("/api/metrics/#{options[:hostid]}", initheader = {'Content-Type' =>'application/json'})
-		  request.body  = gather_metrics.to_json
-      response      = Net::HTTP.new(options[:server], options[:port]).start {|http| http.request(request) }
-      puts "Response #{response.code} #{response.message}: #{response.body}"
+      request       = Net::HTTP::Post.new("/api/metrics/#{properties[:hostname]}", initheader = {'Content-Type' =>'application/json'})
+      request.body  = gather_metrics.to_json
+      Net::HTTP.start(properties[:server_address], properties[:port]) do |http|
+        request.basic_auth(properties[:username], properties[:password])
+        response = http.request(request)
+        puts "Response #{response.code} #{response.message}: #{response.body}"
+      end
     end
 
     # Check if all local deps are available
