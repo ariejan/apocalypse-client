@@ -31,7 +31,7 @@ module Apocalypse
     # Report metrics
     def report(options)
       request       = Net::HTTP::Post.new("/api/metrics/#{properties[:hostname]}", initheader = {'Content-Type' =>'application/json'})
-      request.body  = metric_string #gather_metrics.to_json
+      request.body  = gather_metrics.to_json
       Net::HTTP.start(properties[:server_address], properties[:port]) do |http|
         request.basic_auth(properties[:username], properties[:password])
         response              = http.request(request)
@@ -39,12 +39,6 @@ module Apocalypse
         Apocalyse::Client::Response.parse!(response)
       end
     end
-    
-    def metric_string
-      return <<-EOF
-      {"memory":{"total":"524464","free":"29544"},"network":[{"eth0":{"netmask":"255.255.255.0","ipv6scope":"Link","hwaddr":"00:16:3e:02:a9:32","broadcast":"80.255.251.255","mtu":"1500","ipv6addr":"fe80::216:3eff:fe02:a932/64","ipv4address":"80.255.251.182","metric":"1","gateway":"80.255.251.254","txbytes":"1753238576","rxbytes":"4251217317","encapsulation":"Ethernet"}}],"swap":{"total":"1048568","free":"640752"},"cpu":{"cores":"1","loadavg":["1.66","0.14","0.14","2/122","5199"]},"blockdevices":[{"sda1":{"usage":null,"size":null,"tps":"0.35","available":null,"wps":"0.99","mount":null,"used":null,"rps":"1.72"}},{"sda2":{"usage":"30%","size":"29529M","tps":"5.40","available":"19741M","wps":"17.55","mount":"/","used":"8289M","rps":"16.16"}},{"sda3":{"usage":"97%","size":"29529M","tps":"5.40","available":"19741M","wps":"17.55","mount":"/home","used":"8289M","rps":"16.16"}}], "client": {"version": "0.0.2"}}
-      EOF
-    end    
 
     # Check if all local deps are available
     def check(options)
