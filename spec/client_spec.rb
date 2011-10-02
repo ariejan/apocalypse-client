@@ -125,7 +125,7 @@ EOF
   end
   
   describe "Client information" do
-    it "should return the correct number of cores" do
+    it "should return the current version of this client." do
       @reporter.client_information.should eql({ 'version' => Apocalypse::Client::VERSION })
     end
   end  
