@@ -2,6 +2,8 @@ require "yaml"
 require 'rubygems'
 require 'net/http'
 require 'json'
+require 'apocalypse-client/version'
+require 'apocalypse-client/response'
 require 'apocalypse-client/install'
 
 class Hash
@@ -16,33 +18,33 @@ end
 
 module Apocalypse
   class Client
-    def self.host_file; "#{File.dirname(__FILE__)}/../host.yml"; end
+    def self.host_file;     "#{File.dirname(__FILE__)}/../host.yml"; end
+    def self.cron_job_file; "/etc/cron.d/apocalyse"; end    
+    def self.rvm?;          !`which rvm`.chomp.empty? end        
+    
     def self.cron_job_command
-      if `which rvm`.chomp.empty?
-        return "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-reporter report > /dev/null"
-      else
-        return " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null"
-      end
+      return rvm? \
+        ? " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use $RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null" \
+        : "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-client report > /dev/null"
     end
-    def self.cron_job_file
-      "/etc/cron.d/apocalyse"
-    end
-    def properties
-      throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
-      @properties ||= ::YAML.load(File.open(self.class.host_file))
-    end
-    ## Commands
 
     # Report metrics
     def report(options)
       request       = Net::HTTP::Post.new("/api/metrics/#{properties[:hostname]}", initheader = {'Content-Type' =>'application/json'})
-      request.body  = gather_metrics.to_json
+      request.body  = metric_string #gather_metrics.to_json
       Net::HTTP.start(properties[:server_address], properties[:port]) do |http|
         request.basic_auth(properties[:username], properties[:password])
-        response = http.request(request)
-        puts "Response #{response.code} #{response.message}: #{response.body}"
+        response              = http.request(request)
+        
+        Apocalyse::Client::Response.parse!(response)
       end
     end
+    
+    def metric_string
+      return <<-EOF
+      {"memory":{"total":"524464","free":"29544"},"network":[{"eth0":{"netmask":"255.255.255.0","ipv6scope":"Link","hwaddr":"00:16:3e:02:a9:32","broadcast":"80.255.251.255","mtu":"1500","ipv6addr":"fe80::216:3eff:fe02:a932/64","ipv4address":"80.255.251.182","metric":"1","gateway":"80.255.251.254","txbytes":"1753238576","rxbytes":"4251217317","encapsulation":"Ethernet"}}],"swap":{"total":"1048568","free":"640752"},"cpu":{"cores":"1","loadavg":["1.66","0.14","0.14","2/122","5199"]},"blockdevices":[{"sda1":{"usage":null,"size":null,"tps":"0.35","available":null,"wps":"0.99","mount":null,"used":null,"rps":"1.72"}},{"sda2":{"usage":"30%","size":"29529M","tps":"5.40","available":"19741M","wps":"17.55","mount":"/","used":"8289M","rps":"16.16"}},{"sda3":{"usage":"97%","size":"29529M","tps":"5.40","available":"19741M","wps":"17.55","mount":"/home","used":"8289M","rps":"16.16"}}], "client": {"version": "0.0.2"}}
+      EOF
+    end    
 
     # Check if all local deps are available
     def check(options)
@@ -58,6 +60,11 @@ module Apocalypse
       else
         errors.each { |error| puts errors }
       end
+    end
+
+    def update(options)
+      installation = Apocalyse::Client::Install.new
+      installation.update!
     end
 
     def now(options)
@@ -79,8 +86,13 @@ module Apocalypse
         'memory' => memory_metrics,
         'swap' => swap_metrics,
         'blockdevices' => blockdevice_metrics,
-        'network' => network_metrics
+        'network' => network_metrics,
+        'client'  => client_information
       }
+    end
+
+    def client_information
+      { 'version' => Apocalypse::Client::VERSION }
     end
 
     # Returns the number of CPU Cores for this system
@@ -145,5 +157,11 @@ module Apocalypse
         }}
       end
     end
+    
+    private
+      def properties
+        throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
+        @properties ||= ::YAML.load(File.open(self.class.host_file))
+      end
   end
 end
