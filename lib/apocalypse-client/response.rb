@@ -5,6 +5,8 @@ module Apocalyse
       RESULT_CLIENT_OUTDATED  = 1001
       
       def self.parse!(response)
+        return if response.code.to_i == 401
+        
         if response.code.to_i == 200
           response_obj = JSON.parse(response.body)
           unless response_obj["code"] == RESULT_OK
