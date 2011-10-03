@@ -2,6 +2,8 @@ require "yaml"
 require 'rubygems'
 require 'net/http'
 require 'json'
+require 'apocalypse-client/version'
+require 'apocalypse-client/response'
 require 'apocalypse-client/install'
 
 class Hash
@@ -16,22 +18,15 @@ end
 
 module Apocalypse
   class Client
-    def self.host_file; "#{File.dirname(__FILE__)}/../host.yml"; end
+    def self.host_file;     "#{File.dirname(__FILE__)}/../host.yml"; end
+    def self.cron_job_file; "/etc/cron.d/apocalyse"; end    
+    def self.rvm?;          !`which rvm`.chomp.empty? end        
+    
     def self.cron_job_command
-      if `which rvm`.chomp.empty?
-        return "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-reporter report > /dev/null"
-      else
-        return " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null"
-      end
+      return rvm? \
+        ? " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use $RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null" \
+        : "* * * * * root PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-client report > /dev/null"
     end
-    def self.cron_job_file
-      "/etc/cron.d/apocalyse"
-    end
-    def properties
-      throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
-      @properties ||= ::YAML.load(File.open(self.class.host_file))
-    end
-    ## Commands
 
     # Report metrics
     def report(options)
@@ -39,8 +34,9 @@ module Apocalypse
       request.body  = gather_metrics.to_json
       Net::HTTP.start(properties[:server_address], properties[:port]) do |http|
         request.basic_auth(properties[:username], properties[:password])
-        response = http.request(request)
-        puts "Response #{response.code} #{response.message}: #{response.body}"
+        response              = http.request(request)
+        
+        Apocalyse::Client::Response.parse!(response)
       end
     end
 
@@ -58,6 +54,11 @@ module Apocalypse
       else
         errors.each { |error| puts errors }
       end
+    end
+
+    def update(options)
+      installation = Apocalyse::Client::Install.new
+      installation.update!
     end
 
     def now(options)
@@ -79,8 +80,13 @@ module Apocalypse
         'memory' => memory_metrics,
         'swap' => swap_metrics,
         'blockdevices' => blockdevice_metrics,
-        'network' => network_metrics
+        'network' => network_metrics,
+        'client'  => client_information
       }
+    end
+
+    def client_information
+      { 'version' => Apocalypse::Client::VERSION }
     end
 
     # Returns the number of CPU Cores for this system
@@ -145,5 +151,11 @@ module Apocalypse
         }}
       end
     end
+    
+    private
+      def properties
+        throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
+        @properties ||= ::YAML.load(File.open(self.class.host_file))
+      end
   end
 end
