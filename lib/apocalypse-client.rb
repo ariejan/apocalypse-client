@@ -2,6 +2,7 @@ require "yaml"
 require 'rubygems'
 require 'net/http'
 require 'json'
+require 'fileutils'
 require 'apocalypse-client/version'
 require 'apocalypse-client/response'
 require 'apocalypse-client/install'
@@ -19,7 +20,15 @@ end
 module Apocalypse
   class Client
     # Was "#{File.dirname(__FILE__)}/../host.yml"
-    def self.host_file;     "/etc/apocalypse.yml"; end
+    def self.host_file
+      # Try to move the old configuration file to the new location
+      old_file = "#{File.dirname(__FILE__)}/../host.yml"
+      if !File.exists?("/etc/apocalypse.yml") && File.exists?(old_file)
+        FileUtils.mv old_file, "/etc/apocalypse.yml", :force => true
+      end
+
+      return "/etc/apocalypse.yml"
+    end
     def self.cron_job_file; "/etc/cron.d/apocalypse"; end
     def self.rvm?;          !`which rvm`.chomp.empty? end
 
