@@ -18,7 +18,8 @@ end
 
 module Apocalypse
   class Client
-    def self.host_file;     "#{File.dirname(__FILE__)}/../host.yml"; end
+    # Was "#{File.dirname(__FILE__)}/../host.yml"
+    def self.host_file;     "/etc/apocalypse.yml"; end
     def self.cron_job_file; "/etc/cron.d/apocalypse"; end
     def self.rvm?;          !`which rvm`.chomp.empty? end
 
