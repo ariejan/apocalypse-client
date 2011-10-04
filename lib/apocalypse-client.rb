@@ -53,6 +53,7 @@ module Apocalypse
         puts "Everything seems to be in place. You're good to go."
       else
         errors.each { |error| puts errors }
+        exit(1)
       end
     end
 
@@ -66,6 +67,7 @@ module Apocalypse
     end
 
     def install(options)
+      check(options)
       installation = Apocalyse::Client::Install.new
       installation.install!
     end
