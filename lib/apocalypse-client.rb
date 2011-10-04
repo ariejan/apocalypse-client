@@ -19,9 +19,9 @@ end
 module Apocalypse
   class Client
     def self.host_file;     "#{File.dirname(__FILE__)}/../host.yml"; end
-    def self.cron_job_file; "/etc/cron.d/apocalyse"; end    
-    def self.rvm?;          !`which rvm`.chomp.empty? end        
-    
+    def self.cron_job_file; "/etc/cron.d/apocalypse"; end
+    def self.rvm?;          !`which rvm`.chomp.empty? end
+
     def self.cron_job_command
       return rvm? \
         ? " * * * * * root PATH=$PATH:/sbin:/usr/sbin rvm use $RUBY_VERSION ; /usr/local/bin/rvm exec apocalypse-client report > /dev/null" \
@@ -35,7 +35,7 @@ module Apocalypse
       Net::HTTP.start(properties[:server_address], properties[:port]) do |http|
         request.basic_auth(properties[:username], properties[:password])
         response              = http.request(request)
-        
+
         Apocalyse::Client::Response.parse!(response)
       end
     end
@@ -151,10 +151,10 @@ module Apocalypse
         }}
       end
     end
-    
+
     private
       def properties
-        throw Exception.new("Host file not found. Please run `apocalyse-client now`") unless File.exists?(self.class.host_file)
+        throw Exception.new("Host file not found. Please run `apocalypse-client now`") unless File.exists?(self.class.host_file)
         @properties ||= ::YAML.load(File.open(self.class.host_file))
       end
   end
