@@ -146,11 +146,11 @@ module Apocalypse
           'rxbytes' => `/usr/bin/env ifconfig #{device_name} | grep bytes | awk '/RX/ {print $2}' | tr -s ':' ' ' | awk '{print $2}'`.strip,
           'txbytes' => `/usr/bin/env ifconfig #{device_name} | grep bytes | awk '/TX/ {print $6}' | tr -s ':' ' ' | awk '{print $2}'`.strip,
           'ipv4address' => `/usr/bin/env ifconfig #{device_name} | egrep -o 'inet addr\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $3}'`.strip,
-          'broadcast' => `/usr/bin/env ifconfig #{device_name} | egrep -o Bcast\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\} | tr -s ':' ' ' | awk '{print $2}'`.strip,
-          'netmask' => `/usr/bin/env ifconfig #{device_name} | egrep -o Mask\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\} | tr -s ':' ' ' | awk '{print $2}'`.strip,
+          'broadcast' => `/usr/bin/env ifconfig #{device_name} | egrep -o 'Bcast\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $2}'`.strip,
+          'netmask' => `/usr/bin/env ifconfig #{device_name} | egrep -o 'Mask\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $2}'`.strip,
           'gateway' => `netstat -rn | grep ^0.0.0.0 | grep UG | grep #{device_name} | awk '{print $2}' | head -n1`.strip,
           'ipv6addr' => `/usr/bin/env ifconfig #{device_name} | egrep -o 'inet6 addr\:\ \([a-fA-F0-9]\{1,4}\:\{1,2\}[a-fA-F0-9]\{1,4}\:\{1,2\}\)+[A-Fa-f0-9\/^\ ]+' | awk '{print $3}'`.strip,
-          'ipv6scope' => `/usr/bin/env ifconfig #{device_name} | egrep -o Scope\:[a-zA-Z]+ | cut -d":" -f2`.strip
+          'ipv6scope' => `/usr/bin/env ifconfig #{device_name} | egrep -o 'Scope\:[a-zA-Z]+' | cut -d":" -f2`.strip
         }}
       end
     end

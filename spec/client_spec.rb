@@ -53,11 +53,11 @@ describe Apocalypse::Client do
         "/usr/bin/env ifconfig eth0 | grep bytes | awk '/RX/ {print $2}' | tr -s ':' ' ' | awk '{print $2}'" => "384735745",
         "/usr/bin/env ifconfig eth0 | grep bytes | awk '/TX/ {print $6}' | tr -s ':' ' ' | awk '{print $2}'" => "3575372573",
         "/usr/bin/env ifconfig eth0 | egrep -o 'inet addr\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $3}'" => "10.187.234.18",
-        "/usr/bin/env ifconfig eth0 | egrep -o Bcast\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\} | tr -s ':' ' ' | awk '{print $2}'" => "10.187.234.254",
-        "/usr/bin/env ifconfig eth0 | egrep -o Mask\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\} | tr -s ':' ' ' | awk '{print $2}'" => "255.0.0.0",
+        "/usr/bin/env ifconfig eth0 | egrep -o 'Bcast\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $2}'" => "10.187.234.254",
+        "/usr/bin/env ifconfig eth0 | egrep -o 'Mask\:[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | tr -s ':' ' ' | awk '{print $2}'" => "255.0.0.0",
         "netstat -rn | grep ^0.0.0.0 | grep UG | grep eth0 | awk '{print $2}' | head -n1" => "10.187.234.1",
         "/usr/bin/env ifconfig eth0 | egrep -o 'inet6 addr\:\ \([a-fA-F0-9]\{1,4}\:\{1,2\}[a-fA-F0-9]\{1,4}\:\{1,2\}\)+[A-Fa-f0-9\/^\ ]+' | awk '{print $3}'" => "fe80::1031:3cff:fe00:bde1/64",
-        "/usr/bin/env ifconfig eth0 | egrep -o Scope\:[a-zA-Z]+ | cut -d\":\" -f2" => "Link"
+        "/usr/bin/env ifconfig eth0 | egrep -o 'Scope\:[a-zA-Z]+' | cut -d\":\" -f2" => "Link"
       }.each do |command, result|
         @reporter.should_receive(:`).with(command).and_return(result)
       end
