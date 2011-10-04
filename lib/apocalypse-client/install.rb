@@ -2,18 +2,29 @@ module Apocalyse
   module Client
     class Install
       def install!
-        begin 
-          check_file_access   # Start of by checking if we can write the Cron job
-          read_values         # Now ask the user for the configuration input
-          validate            # Make sure the input is correct
-          check_server        # Check if the provided server is accessible 
-          write_host_file     # Write the configuration file for this host
-          install_cron_job    # Finally install the Cronjob
-          
-          puts "All done.."
-        rescue Exception => e
-         puts e.message
-        end        
+        check_file_access   # Start of by checking if we can write the Cron job
+        read_values         # Now ask the user for the configuration input
+        validate            # Make sure the input is correct
+        check_server        # Check if the provided server is accessible 
+        write_host_file     # Write the configuration file for this host
+        install_cron_job    # Finally install the Cronjob
+        
+        puts "All done.."
+      rescue Exception => e
+       puts e.message
+      end
+
+      def update!
+        puts "Updating..."
+        #  Nothing here as nothing needs to be updated yet.
+      end
+      
+      def self_update!
+        update_gem         # gem update apocalypse-client
+        update_command     # Do a update command
+        
+      rescue Exception => e
+        puts e.message
       end
       
       protected 
@@ -86,6 +97,24 @@ EOF
         
         def install_cron_job
           `echo "#{::Apocalypse::Client.cron_job_command}" > #{::Apocalypse::Client.cron_job_file}`
+        end
+        
+        def update_gem
+          if ::Apocalypse::Client.rvm?  
+            puts "Updating gem using RVM.."
+            `PATH=$PATH:/sbin:/usr/sbin rvm use $RUBY_VERSION; /usr/local/bin/rvm gem update apocalypse-client > /dev/null`
+          else
+            puts "Updating system gem.."          
+            `PATH=$PATH:/sbin:/usr/sbin; sudo gem update apocalypse-client > /dev/null`
+          end          
+        end
+        
+        def update_command
+          if ::Apocalypse::Client.rvm?  
+            `PATH=$PATH:/sbin:/usr/sbin rvm use $RUBY_VERSION; apocalypse-client update > /dev/null`
+          else
+            `PATH=$PATH:/sbin:/usr/sbin /usr/bin/env apocalypse-client update > /dev/null`
+          end          
         end
         
       private

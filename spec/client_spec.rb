@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+
 describe Apocalypse::Client do
   before(:each) do
     @reporter = Apocalypse::Client.new
@@ -122,4 +123,10 @@ EOF
       sda2["mount"].should eql("/")
     end
   end
+  
+  describe "Client information" do
+    it "should return the current version of this client." do
+      @reporter.client_information.should eql({ 'version' => Apocalypse::Client::VERSION })
+    end
+  end  
 end
